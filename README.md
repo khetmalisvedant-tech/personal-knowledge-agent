@@ -17,62 +17,40 @@ User-friendly HTML interface with clear data summaries and visual cues for notes
 Backend Powered by FastAPI
 High-performance asynchronous API for AI queries and note management.
 Seamless integration with Google Generative AI.
+
 🧠 Example Knowledge Items
 The app can manage structured learning data such as:
+> React Basis – core concepts like components, JSX, and state.
+> DSA Fundamentals – data structures and algorithms.
+> Machine Learning – supervised, unsupervised, and reinforcement learning.
+> Indian History Profiles – Bhagat Singh, Chandrashekhar Azad, Manohar Parrikar, and more.
+> Each note includes title, content, tags, creation time, and word count.
 
-React Basis – core concepts like components, JSX, and state.
-DSA Fundamentals – data structures and algorithms.
-Machine Learning – supervised, unsupervised, and reinforcement learning.
-Indian History Profiles – Bhagat Singh, Chandrashekhar Azad, Manohar Parrikar, and more.
-Each note includes title, content, tags, creation time, and word count.
-
-🛠️ Tech Stack
-Layer	Technology
-Backend	
-fastapi.tiangolo.com
-Frontend	HTML, CSS, JavaScript
-AI/LLM	
-cloud.google.com
-Server	
-uvicorn.org
-Environment Config	python-dotenv
-File Support	.txt, .md, .env
 📦 Installation
 1. Clone the repository
 bash
+  git clone [github.com](https://github.com/your-username/personal-knowledge-base-agent.git)
+  cd personal-knowledge-base-agent
 
-
-git clone [github.com](https://github.com/your-username/personal-knowledge-base-agent.git)
-cd personal-knowledge-base-agent
 2. Create a virtual environment
-bash
+  python -m venv venv
+  source venv/bin/activate 
 
-
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
 3. Install dependencies
 bash
+ pip install -r requirements.txt
 
-
-pip install -r requirements.txt
 4. Configure environment variables
 Create a .env file in the root directory and add:
-
-
-
 GOOGLE_API_KEY=your_api_key_here
+
 5. Run the server
 bash
+ uvicorn app:app --reload
+Visit 127.0.0.1 to open the app.
 
-
-uvicorn app:app --reload
-Visit 
-127.0.0.1
- to open the app.
 
 🧩 Project Structure
-
-
 .
 ├── index.html            # Frontend interface
 ├── pkb_data.json         # Stored knowledge items and metadata
@@ -80,6 +58,7 @@ Visit
 ├── .gitignore            # Ignored files and folders
 ├── .env                  # Environment variables (user-defined)
 └── app/                  # Backend source code (FastAPI routes, AI integration)
+
 ✨ Usage
 Open the web interface.
 Upload .txt or .md notes to build your knowledge base.
@@ -88,9 +67,9 @@ Ask natural questions like:
 "What is React used for?"
 "Explain Bhagat Singh’s ideology."
 Get meaningful, contextual answers derived directly from your notes.
+
+
 🧧 Example .gitignore
-
-
 # Python
 __pycache__/
 *.pyc
@@ -103,16 +82,16 @@ __pycache__/
 .DS_Store
 # Node (if any)
 node_modules/
+
+
 📚 Dependencies
 From requirements.txt:
-
-
-
-google-generativeai>=0.8.0
-fastapi>=0.110.0
-uvicorn[standard]>=0.27.0
-python-multipart>=0.0.9
-python-dotenv>=1.0.0
+  google-generativeai>=0.8.0
+  fastapi>=0.110.0
+  uvicorn[standard]>=0.27.0
+  python-multipart>=0.0.9
+  python-dotenv>=1.0.0
+  
 🧩 Future Enhancements
 Multi-user support and authentication
 Note tagging and semantic grouping with embeddings
