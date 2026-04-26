@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.debugpy",
+    "ms-python.black-formatter",
+    "ms-python.pylint",
+    "rangav.vscode-thunder-client",
+    "christian-kohler.path-intellisense",
+    "usernamehw.errorlens"
+  ]
+}

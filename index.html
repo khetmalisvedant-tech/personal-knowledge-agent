@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personal Knowledge Base Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e11;
+    --surface: #16161a;
+    --card: #1c1c22;
+    --border: #2a2a32;
+    --accent: #7c6af7;
+    --accent2: #4ecdc4;
+    --accent3: #f7b731;
+    --text: #e8e8f0;
+    --muted: #8888a0;
+    --danger: #ff6b6b;
+    --success: #4ecdc4;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    font-size: 15px;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 240px;
+    min-height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 28px 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+  }
+
+  .logo {
+    padding: 0 22px 28px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .logo span {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  nav { padding: 18px 12px; flex: 1; }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 400;
+    transition: all 0.15s;
+    margin-bottom: 2px;
+  }
+
+  .nav-item:hover { background: var(--card); color: var(--text); }
+  .nav-item.active { background: var(--accent); color: white; }
+
+  .nav-icon { width: 18px; height: 18px; opacity: 0.8; flex-shrink: 0; }
+
+  .sidebar-stats {
+    padding: 16px 22px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .stat-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .stat-row span:last-child { color: var(--text); font-weight: 500; }
+
+  /* ── Main ── */
+  .main {
+    margin-left: 240px;
+    flex: 1;
+    padding: 36px 40px;
+    max-width: 960px;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── Page headers ── */
+  .page-header {
+    margin-bottom: 28px;
+  }
+
+  .page-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .page-header p { color: var(--muted); font-size: 14px; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    margin-bottom: 16px;
+  }
+
+  /* ── Inputs ── */
+  input, textarea, select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    width: 100%;
+    outline: none;
+    transition: border 0.15s;
+  }
+
+  input:focus, textarea:focus { border-color: var(--accent); }
+
+  textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
+
+  label {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  .form-group { margin-bottom: 16px; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+
+  .btn-primary:hover { background: #6a58e8; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid transparent;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .btn-danger:hover { background: rgba(255,107,107,0.1); }
+
+  /* ── Note cards ── */
+  .note-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    transition: border 0.15s;
+  }
+
+  .note-card:hover { border-color: #3a3a48; }
+
+  .note-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .note-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.4;
+  }
+
+  .note-preview {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+
+  .note-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    background: rgba(124,106,247,0.15);
+    color: var(--accent);
+    border: 1px solid rgba(124,106,247,0.3);
+    font-weight: 500;
+  }
+
+  .note-meta {
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  /* ── Search bar ── */
+  .search-wrap {
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  .search-wrap input { padding-left: 40px; }
+
+  .search-icon {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 16px;
+    pointer-events: none;
+  }
+.note-card {
+  background: #161b22;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+  border: 1px solid #30363d;
+}
+
+.note-card:hover {
+  background: #1c2128;
+  transform: scale(1.01);
+}
+
+.note-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #58a6ff;
+}
+
+.note-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.note-card.active .note-content {
+  max-height: 500px;
+}
+  /* ── Q&A ── */
+  .qa-bubble {
+    padding: 14px 18px;
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+    line-height: 1.7;
+    font-size: 14px;
+  }
+
+  .qa-bubble.user {
+    background: rgba(124,106,247,0.12);
+    border: 1px solid rgba(124,106,247,0.25);
+    color: var(--text);
+  }
+
+  .qa-bubble.agent {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .qa-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 6px;
+  }
+
+  .qa-label.user { color: var(--accent); }
+  .qa-label.agent { color: var(--accent2); }
+
+  /* ── Clusters ── */
+  .cluster-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+
+  .cluster-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+
+  .cluster-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .cluster-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .cluster-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    background: rgba(78,205,196,0.15);
+    color: var(--accent2);
+    border: 1px solid rgba(78,205,196,0.3);
+  }
+
+  .cluster-summary {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+
+  .cluster-keywords {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+
+  .keyword {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--surface);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .cluster-notes-list { font-size: 12px; color: var(--muted); }
+  .cluster-notes-list div { padding: 3px 0; border-bottom: 1px solid var(--border); }
+  .cluster-notes-list div:last-child { border: none; }
+
+  /* ── File upload ── */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+  }
+
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(124,106,247,0.05);
+  }
+
+  .upload-icon { font-size: 32px; margin-bottom: 10px; }
+  .upload-text { color: var(--muted); font-size: 14px; }
+  .upload-text strong { color: var(--accent); }
+
+  /* ── Loading ── */
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 18px;
+    font-size: 13px;
+    color: var(--text);
+    z-index: 999;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: var(--success); }
+  .toast.error { border-color: var(--danger); }
+
+  /* ── Stats dashboard ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+  }
+
+  .stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label { font-size: 12px; color: var(--muted); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* ── Score badge ── */
+  .score-badge {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: rgba(247,183,49,0.15);
+    color: var(--accent3);
+    border: 1px solid rgba(247,183,49,0.3);
+  }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+
+  .empty-state .emoji { font-size: 40px; margin-bottom: 12px; }
+  .empty-state h3 { font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+  .empty-state p { font-size: 13px; }
+
+  hr.divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 0;
+  }
+
+  .flex { display: flex; }
+  .gap-2 { gap: 8px; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .mb-4 { margin-bottom: 16px; }
+  .text-sm { font-size: 13px; }
+  .text-muted { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="logo">
+    <h1>PKB Agent</h1>
+    <span>Personal Knowledge Base</span>
+  </div>
+  <nav>
+    <div class="nav-item active" onclick="showPage('dashboard')">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" onclick="showPage('add')">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="16" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="12" x2="16" y2="12" stroke-width="2" stroke-linecap="round"/></svg>
+      Add Note
+    </div>
+    <div class="nav-item" onclick="showPage('notes')">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      All Notes
+    </div>
+    <div class="nav-item" onclick="showPage('search')">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke-width="2" stroke-linecap="round"/></svg>
+      Search
+    </div>
+    <div class="nav-item" onclick="showPage('ask')">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Ask AI
+    </div>
+    <div class="nav-item" onclick="showPage('web')">
+        🌐 Web Fetch
+    </div>
+    <div class="nav-item" onclick="showPage('clusters')">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2" stroke-width="2"/><circle cx="5" cy="19" r="2" stroke-width="2"/><circle cx="19" cy="19" r="2" stroke-width="2"/><line x1="12" y1="7" x2="5" y2="17" stroke-width="2"/><line x1="12" y1="7" x2="19" y2="17" stroke-width="2"/><line x1="5" y1="19" x2="19" y2="19" stroke-width="2"/></svg>
+      Topics
+    </div>
+    <div class="nav-item" onclick="showPage('upload')">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Upload File
+    </div>
+  </nav>
+  <div class="sidebar-stats" id="sidebar-stats">
+    <div class="stat-row"><span>Notes</span><span id="sb-notes">—</span></div>
+    <div class="stat-row"><span>Words</span><span id="sb-words">—</span></div>
+  </div>
+</aside>
+
+<!-- ── Main Content ── -->
+<main class="main">
+
+  <!-- Dashboard -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-header">
+      <h2>Dashboard</h2>
+      <p>Your personal knowledge overview</p>
+    </div>
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card"><div class="stat-number" id="stat-notes">0</div><div class="stat-label">Total Notes</div></div>
+      <div class="stat-card"><div class="stat-number" id="stat-words">0</div><div class="stat-label">Total Words</div></div>
+      <div class="stat-card"><div class="stat-number" id="stat-tags">0</div><div class="stat-label">Unique Tags</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div style="font-size:13px;font-weight:500;margin-bottom:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Recent Notes</div>
+        <div id="recent-notes"><div class="text-muted text-sm">No notes yet.</div></div>
+      </div>
+      <div class="card">
+        <div style="font-size:13px;font-weight:500;margin-bottom:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Top Tags</div>
+        <div id="top-tags" style="display:flex;flex-wrap:wrap;gap:8px"><div class="text-muted text-sm">No tags yet.</div></div>
+      </div>
+    </div>
+  </div>
+<div class="page" id="page-web">
+  <div class="page-header">
+    <h2>Web Knowledge Import</h2>
+    <p>Fetch notes directly from the internet</p>
+  </div>
+
+  <div class="card">
+    <div class="form-group">
+      <label>Topic</label>
+      <input type="text" id="web-topic" placeholder="e.g. Artificial Intelligence">
+    </div>
+
+    <button class="btn btn-primary" onclick="fetchFromWeb()" id="fetch-btn">
+      🌐 Fetch from Web
+    </button>
+
+    <div id="web-result" style="margin-top:15px;"></div>
+  </div>
+</div>
+  <!-- Add Note -->
+  <div class="page" id="page-add">
+    <div class="page-header">
+      <h2>Add Note</h2>
+      <p>Capture knowledge into your base</p>
+    </div>
+    <div class="card">
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="note-title" placeholder="Give your note a clear title…">
+      </div>
+      <div class="form-group">
+        <label>Content</label>
+        <textarea id="note-content" rows="8" placeholder="Write your thoughts, insights, notes, links, or anything you want to remember…"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Tags (comma-separated)</label>
+        <input type="text" id="note-tags" placeholder="e.g. python, machine-learning, research">
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-primary" onclick="submitNote()" id="submit-note-btn">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Save Note
+        </button>
+        <button class="btn btn-ghost" onclick="clearNoteForm()">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- All Notes -->
+  <div class="page" id="page-notes">
+    <div class="page-header">
+      <h2>All Notes</h2>
+      <p>Browse and manage your knowledge base</p>
+    </div>
+    <div id="notes-list"><div class="empty-state"><div class="emoji">📭</div><h3>No notes yet</h3><p>Add your first note to get started.</p></div></div>
+  </div>
+
+  <!-- Search -->
+  <div class="page" id="page-search">
+    <div class="page-header">
+      <h2>Semantic Search</h2>
+      <p>Find notes by meaning, not just keywords</p>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Search your knowledge base…" onkeydown="if(event.key==='Enter') doSearch()">
+    </div>
+    <button class="btn btn-primary mb-4" onclick="doSearch()">Search</button>
+    <div id="search-results"></div>
+  </div>
+
+  <!-- Ask AI -->
+  <div class="page" id="page-ask">
+    <div class="page-header">
+      <h2>Ask AI</h2>
+      <p>Ask questions — answers grounded in your notes</p>
+    </div>
+    <div id="qa-history" style="margin-bottom:16px"></div>
+    <div class="card" style="padding:16px">
+      <div style="display:flex;gap:10px">
+        <input type="text" id="qa-input" placeholder="Ask (try: explain / why / exam / confused)…" onkeydown="if(event.key==='Enter') askQuestion()" style="flex:1">
+        <button class="btn btn-primary" onclick="askQuestion()" id="ask-btn" style="white-space:nowrap">Ask →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Topics / Clusters -->
+  <div class="page" id="page-clusters">
+    <div class="page-header">
+      <h2>Topic Clusters</h2>
+      <p>AI-discovered themes across your knowledge base</p>
+    </div>
+    <button class="btn btn-primary mb-4" onclick="loadClusters()" id="cluster-btn">
+      Discover Topics
+    </button>
+    <div id="cluster-results"></div>
+  </div>
+
+  <!-- Upload File -->
+  <div class="page" id="page-upload">
+    <div class="page-header">
+      <h2>Upload File</h2>
+      <p>Import .txt or .md documents into your knowledge base</p>
+    </div>
+    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event)">
+      <div class="upload-icon">📄</div>
+      <div class="upload-text"><strong>Click to upload</strong> or drag and drop</div>
+      <div class="upload-text" style="margin-top:6px;font-size:12px">.txt and .md files supported</div>
+    </div>
+    <input type="file" id="file-input" accept=".txt,.md" style="display:none" onchange="handleFileSelect(event)">
+    <div id="upload-status"></div>
+  </div>
+
+</main>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+
+const API = "";
+
+// ───────── NAVIGATION ─────────
+function showPage(name) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+
+  document.getElementById("page-" + name).classList.add("active");
+
+  const names = ["dashboard","add","notes","search","ask","clusters","upload","web"];
+  document.querySelectorAll(".nav-item")[names.indexOf(name)]?.classList.add("active");
+
+  if (name === "dashboard") loadStats();
+  if (name === "notes") loadNotes();
+}
+
+// ───────── TOAST ─────────
+function toast(msg, type="") {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast show " + type;
+  setTimeout(() => t.className = "toast", 2500);
+}
+
+// ───────── API HELPER ─────────
+async function apiFetch(path, opts={}) {
+  const res = await fetch(API + path, {
+    headers: {'Content-Type': 'application/json'},
+    ...opts
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+// ───────── STATS ─────────
+async function loadStats() {
+  try {
+    const data = await apiFetch('/stats');
+    document.getElementById("stat-notes").textContent = data.total_notes;
+    document.getElementById("stat-words").textContent = data.total_words;
+
+    document.getElementById("sb-notes").textContent = data.total_notes;
+    document.getElementById("sb-words").textContent = data.total_words;
+  } catch(e) {}
+}
+
+// ───────── NOTES ─────────
+function loadNotes() {
+  fetch("/notes")
+    .then(res => res.json())
+    .then(data => {
+      const container = document.getElementById("notes-list");
+
+      container.innerHTML = data.map(note => `
+        <div class="note-card" onclick="toggleNote('${note.id}')">
+          
+          <div class="note-title">
+            ${note.title}
+          </div>
+
+          <div class="note-content" id="note-${note.id}">
+            ${note.content}
+          </div>
+
+        </div>
+      `).join("");
+    });
+}
+async function submitNote() {
+  const title = document.getElementById("note-title").value;
+  const content = document.getElementById("note-content").value;
+  const tags = document.getElementById("note-tags").value.split(",");
+
+  if (!title || !content) {
+    toast("Title and content required","error");
+    return;
+  }
+
+  await apiFetch("/notes", {
+    method:"POST",
+    body: JSON.stringify({title, content, tags})
+  });
+
+  toast("Note added","success");
+  loadNotes();
+}
+
+// ───────── SEARCH ─────────
+async function doSearch() {
+  const q = document.getElementById("search-input").value;
+
+  const results = await apiFetch("/search", {
+    method:"POST",
+    body: JSON.stringify({query:q})
+  });
+
+  document.getElementById("search-results").innerHTML =
+    results.map(n => `<div class="note-card">${n.title}</div>`).join("");
+}
+
+// ───────── ASK AI ─────────
+async function askQuestion() {
+  const q = document.getElementById("qa-input").value.trim();
+  if (!q) return;
+
+  const res = await apiFetch("/ask", {
+    method: "POST",
+    body: JSON.stringify({ question: q })
+  });
+
+  document.getElementById("qa-history").innerHTML += `
+    <div class="qa-bubble user">${esc(q)}</div>
+    <div class="qa-bubble agent">${esc(res.answer)}</div>
+  `;
+}
+
+// ───────── 🌐 WEB FETCH (FIXED) ─────────
+async function fetchFromWeb() {
+  const topic = document.getElementById("web-topic").value.trim();
+
+  if (!topic) {
+    toast("Enter a topic","error");
+    return;
+  }
+
+  const btn = document.getElementById("fetch-btn");
+  btn.innerHTML = "Fetching...";
+  btn.disabled = true;
+
+  try {
+    const res = await fetch("/fetch", {
+      method:"POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({topic})
+    });
+
+    const data = await res.json();
+
+    if (data.error) throw new Error(data.error);
+
+    document.getElementById("web-result").innerHTML = `
+      <div class="card">
+        <b>✅ Added:</b> ${data.note.title}<br>
+        ${data.note.word_count} words
+      </div>
+    `;
+
+    toast("Knowledge added!","success");
+
+    loadNotes();
+    loadStats();
+
+  } catch(e) {
+    toast("Failed to fetch","error");
+  }
+
+  btn.innerHTML = "🌐 Fetch from Web";
+  btn.disabled = false;
+}
+function toggleNote(id) {
+  const el = document.getElementById("note-" + id);
+
+  if (el.style.display === "block") {
+    el.style.display = "none";
+  } else {
+    el.style.display = "block";
+  }
+}
+function toggleNote(id) {
+  const card = document.querySelector(`#note-${id}`).parentElement;
+  card.classList.toggle("active");
+}
+// ───────── HELPERS ─────────
+function esc(s) {
+  return String(s||"")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+}
+
+// ───────── INIT ─────────
+loadStats();
+
+</script></body>
+</html>
