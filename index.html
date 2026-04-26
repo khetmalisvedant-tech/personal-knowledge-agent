@@ -44,6 +44,7 @@
     padding: 28px 0;
     position: fixed;
     top: 0; left: 0; bottom: 0;
+    z-index: 10;
   }
 
   .logo {
@@ -67,7 +68,7 @@
     text-transform: uppercase;
   }
 
-  nav { padding: 18px 12px; flex: 1; }
+  nav { padding: 18px 12px; flex: 1; overflow-y: auto; }
 
   .nav-item {
     display: flex;
@@ -81,6 +82,7 @@
     font-weight: 400;
     transition: all 0.15s;
     margin-bottom: 2px;
+    user-select: none;
   }
 
   .nav-item:hover { background: var(--card); color: var(--text); }
@@ -103,16 +105,15 @@
     margin-left: 240px;
     flex: 1;
     padding: 36px 40px;
-    max-width: 960px;
+    max-width: 1100px;
+    min-width: 0;
   }
 
   .page { display: none; }
   .page.active { display: block; }
 
   /* ── Page headers ── */
-  .page-header {
-    margin-bottom: 28px;
-  }
+  .page-header { margin-bottom: 28px; }
 
   .page-header h2 {
     font-family: 'Playfair Display', serif;
@@ -148,7 +149,6 @@
   }
 
   input:focus, textarea:focus { border-color: var(--accent); }
-
   textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
 
   label {
@@ -176,32 +176,29 @@
     font-size: 14px;
     font-weight: 500;
     transition: all 0.15s;
+    text-decoration: none;
   }
 
-  .btn-primary {
-    background: var(--accent);
-    color: white;
-  }
-
+  .btn-primary { background: var(--accent); color: white; }
   .btn-primary:hover { background: #6a58e8; }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
   .btn-ghost {
     background: transparent;
     color: var(--muted);
     border: 1px solid var(--border);
   }
-
   .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
 
   .btn-danger {
     background: transparent;
     color: var(--danger);
     border: 1px solid transparent;
-    padding: 6px 10px;
+    padding: 6px 12px;
     font-size: 12px;
+    border-radius: var(--radius-sm);
   }
-
-  .btn-danger:hover { background: rgba(255,107,107,0.1); }
+  .btn-danger:hover { background: rgba(255,107,107,0.1); border-color: rgba(255,107,107,0.3); }
 
   /* ── Note cards ── */
   .note-card {
@@ -210,24 +207,29 @@
     border-radius: var(--radius);
     padding: 18px 20px;
     margin-bottom: 12px;
-    transition: border 0.15s;
+    transition: border 0.15s, transform 0.15s;
   }
 
-  .note-card:hover { border-color: #3a3a48; }
+  .note-card:hover { border-color: #3a3a48; transform: translateY(-1px); }
 
   .note-card-header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     margin-bottom: 8px;
+    gap: 10px;
   }
 
-  .note-title {
+  .note-title-text {
     font-size: 15px;
     font-weight: 500;
     color: var(--text);
     line-height: 1.4;
+    cursor: pointer;
+    flex: 1;
   }
+
+  .note-title-text:hover { color: var(--accent); }
 
   .note-preview {
     font-size: 13px;
@@ -235,6 +237,23 @@
     line-height: 1.6;
     margin-bottom: 10px;
   }
+
+  .note-body {
+    display: none;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.7;
+    margin-bottom: 10px;
+    padding: 12px;
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .note-card.expanded .note-body { display: block; }
+  .note-card.expanded .note-preview { display: none; }
 
   .note-footer {
     display: flex;
@@ -276,36 +295,18 @@
     font-size: 16px;
     pointer-events: none;
   }
-.note-card {
-  background: #161b22;
-  padding: 15px;
-  border-radius: 10px;
-  margin-bottom: 12px;
-  cursor: pointer;
-  transition: 0.3s;
-  border: 1px solid #30363d;
-}
 
-.note-card:hover {
-  background: #1c2128;
-  transform: scale(1.01);
-}
+  /* ── Score badge ── */
+  .score-badge {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: rgba(247,183,49,0.15);
+    color: var(--accent3);
+    border: 1px solid rgba(247,183,49,0.3);
+  }
 
-.note-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #58a6ff;
-}
-
-.note-content {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-}
-
-.note-card.active .note-content {
-  max-height: 500px;
-}
   /* ── Q&A ── */
   .qa-bubble {
     padding: 14px 18px;
@@ -325,6 +326,7 @@
     background: var(--card);
     border: 1px solid var(--border);
     color: var(--text);
+    white-space: pre-wrap;
   }
 
   .qa-label {
@@ -363,6 +365,7 @@
     font-family: 'Playfair Display', serif;
     font-size: 16px;
     font-weight: 600;
+    text-transform: capitalize;
   }
 
   .cluster-badge {
@@ -372,13 +375,6 @@
     background: rgba(78,205,196,0.15);
     color: var(--accent2);
     border: 1px solid rgba(78,205,196,0.3);
-  }
-
-  .cluster-summary {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.6;
-    margin-bottom: 12px;
   }
 
   .cluster-keywords {
@@ -421,15 +417,17 @@
   .upload-text { color: var(--muted); font-size: 14px; }
   .upload-text strong { color: var(--accent); }
 
-  /* ── Loading ── */
+  /* ── Loading spinner ── */
   .spinner {
     display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(255,255,255,0.2);
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.25);
     border-top-color: white;
     border-radius: 50%;
     animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
   }
 
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -449,6 +447,7 @@
     transform: translateY(100px);
     opacity: 0;
     transition: all 0.3s;
+    max-width: 320px;
   }
 
   .toast.show { transform: translateY(0); opacity: 1; }
@@ -484,17 +483,6 @@
 
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
-  /* ── Score badge ── */
-  .score-badge {
-    font-size: 11px;
-    font-family: 'JetBrains Mono', monospace;
-    padding: 2px 7px;
-    border-radius: 4px;
-    background: rgba(247,183,49,0.15);
-    color: var(--accent3);
-    border: 1px solid rgba(247,183,49,0.3);
-  }
-
   /* ── Empty state ── */
   .empty-state {
     text-align: center;
@@ -512,6 +500,7 @@
     margin: 20px 0;
   }
 
+  /* ── Utils ── */
   .flex { display: flex; }
   .gap-2 { gap: 8px; }
   .items-center { align-items: center; }
@@ -519,6 +508,30 @@
   .mb-4 { margin-bottom: 16px; }
   .text-sm { font-size: 13px; }
   .text-muted { color: var(--muted); }
+
+  /* ── Mode badge ── */
+  .mode-badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  .mode-exam   { background: rgba(255,107,107,0.15); color: #ff6b6b; border: 1px solid rgba(255,107,107,0.3); }
+  .mode-deep   { background: rgba(78,205,196,0.15);  color: #4ecdc4; border: 1px solid rgba(78,205,196,0.3); }
+  .mode-simple { background: rgba(247,183,49,0.15);  color: #f7b731; border: 1px solid rgba(247,183,49,0.3); }
+  .mode-normal { background: rgba(124,106,247,0.15); color: #7c6af7; border: 1px solid rgba(124,106,247,0.3); }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .sidebar { width: 100%; min-height: auto; position: relative; flex-direction: row; flex-wrap: wrap; padding: 12px; }
+    .main { margin-left: 0; padding: 20px 16px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -531,56 +544,95 @@
   </div>
   <nav>
     <div class="nav-item active" onclick="showPage('dashboard')">
-      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2"/></svg>
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2"/>
+        <rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2"/>
+        <rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2"/>
+        <rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2"/>
+      </svg>
       Dashboard
     </div>
     <div class="nav-item" onclick="showPage('add')">
-      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="16" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="12" x2="16" y2="12" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" stroke-width="2"/>
+        <line x1="12" y1="8" x2="12" y2="16" stroke-width="2" stroke-linecap="round"/>
+        <line x1="8" y1="12" x2="16" y2="12" stroke-width="2" stroke-linecap="round"/>
+      </svg>
       Add Note
     </div>
     <div class="nav-item" onclick="showPage('notes')">
-      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
       All Notes
     </div>
     <div class="nav-item" onclick="showPage('search')">
-      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8" stroke-width="2"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65" stroke-width="2" stroke-linecap="round"/>
+      </svg>
       Search
     </div>
     <div class="nav-item" onclick="showPage('ask')">
-      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
       Ask AI
     </div>
     <div class="nav-item" onclick="showPage('web')">
-        🌐 Web Fetch
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" stroke-width="2"/>
+        <path d="M12 3a15 15 0 010 18M3 12h18M3.6 7.5h16.8M3.6 16.5h16.8" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      Web Fetch
     </div>
     <div class="nav-item" onclick="showPage('clusters')">
-      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2" stroke-width="2"/><circle cx="5" cy="19" r="2" stroke-width="2"/><circle cx="19" cy="19" r="2" stroke-width="2"/><line x1="12" y1="7" x2="5" y2="17" stroke-width="2"/><line x1="12" y1="7" x2="19" y2="17" stroke-width="2"/><line x1="5" y1="19" x2="19" y2="19" stroke-width="2"/></svg>
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <circle cx="12" cy="5" r="2" stroke-width="2"/>
+        <circle cx="5" cy="19" r="2" stroke-width="2"/>
+        <circle cx="19" cy="19" r="2" stroke-width="2"/>
+        <line x1="12" y1="7" x2="5" y2="17" stroke-width="2"/>
+        <line x1="12" y1="7" x2="19" y2="17" stroke-width="2"/>
+        <line x1="5" y1="19" x2="19" y2="19" stroke-width="2"/>
+      </svg>
       Topics
     </div>
     <div class="nav-item" onclick="showPage('upload')">
-      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
       Upload File
     </div>
   </nav>
-  <div class="sidebar-stats" id="sidebar-stats">
+  <div class="sidebar-stats">
     <div class="stat-row"><span>Notes</span><span id="sb-notes">—</span></div>
     <div class="stat-row"><span>Words</span><span id="sb-words">—</span></div>
+    <div class="stat-row"><span>Tags</span><span id="sb-tags">—</span></div>
   </div>
 </aside>
 
 <!-- ── Main Content ── -->
 <main class="main">
 
-  <!-- Dashboard -->
+  <!-- ── Dashboard ── -->
   <div class="page active" id="page-dashboard">
     <div class="page-header">
       <h2>Dashboard</h2>
       <p>Your personal knowledge overview</p>
     </div>
-    <div class="stats-grid" id="stats-grid">
-      <div class="stat-card"><div class="stat-number" id="stat-notes">0</div><div class="stat-label">Total Notes</div></div>
-      <div class="stat-card"><div class="stat-number" id="stat-words">0</div><div class="stat-label">Total Words</div></div>
-      <div class="stat-card"><div class="stat-number" id="stat-tags">0</div><div class="stat-label">Unique Tags</div></div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number" id="stat-notes">0</div>
+        <div class="stat-label">Total Notes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-words">0</div>
+        <div class="stat-label">Total Words</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-tags">0</div>
+        <div class="stat-label">Unique Tags</div>
+      </div>
     </div>
     <div class="grid-2">
       <div class="card">
@@ -593,26 +645,8 @@
       </div>
     </div>
   </div>
-<div class="page" id="page-web">
-  <div class="page-header">
-    <h2>Web Knowledge Import</h2>
-    <p>Fetch notes directly from the internet</p>
-  </div>
 
-  <div class="card">
-    <div class="form-group">
-      <label>Topic</label>
-      <input type="text" id="web-topic" placeholder="e.g. Artificial Intelligence">
-    </div>
-
-    <button class="btn btn-primary" onclick="fetchFromWeb()" id="fetch-btn">
-      🌐 Fetch from Web
-    </button>
-
-    <div id="web-result" style="margin-top:15px;"></div>
-  </div>
-</div>
-  <!-- Add Note -->
+  <!-- ── Add Note ── -->
   <div class="page" id="page-add">
     <div class="page-header">
       <h2>Add Note</h2>
@@ -633,7 +667,10 @@
       </div>
       <div style="display:flex;gap:10px">
         <button class="btn btn-primary" onclick="submitNote()" id="submit-note-btn">
-          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="17,21 17,13 7,13 7,21" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
           Save Note
         </button>
         <button class="btn btn-ghost" onclick="clearNoteForm()">Clear</button>
@@ -641,16 +678,23 @@
     </div>
   </div>
 
-  <!-- All Notes -->
+  <!-- ── All Notes ── -->
   <div class="page" id="page-notes">
     <div class="page-header">
-      <h2>All Notes</h2>
-      <p>Browse and manage your knowledge base</p>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <h2>All Notes</h2>
+          <p>Browse and manage your knowledge base</p>
+        </div>
+        <button class="btn btn-ghost" onclick="loadNotes()" style="font-size:13px">↺ Refresh</button>
+      </div>
     </div>
-    <div id="notes-list"><div class="empty-state"><div class="emoji">📭</div><h3>No notes yet</h3><p>Add your first note to get started.</p></div></div>
+    <div id="notes-list">
+      <div class="empty-state"><div class="emoji">📭</div><h3>No notes yet</h3><p>Add your first note to get started.</p></div>
+    </div>
   </div>
 
-  <!-- Search -->
+  <!-- ── Search ── -->
   <div class="page" id="page-search">
     <div class="page-header">
       <h2>Semantic Search</h2>
@@ -664,40 +708,68 @@
     <div id="search-results"></div>
   </div>
 
-  <!-- Ask AI -->
+  <!-- ── Ask AI ── -->
   <div class="page" id="page-ask">
     <div class="page-header">
       <h2>Ask AI</h2>
-      <p>Ask questions — answers grounded in your notes</p>
+      <p>Questions answered from your notes · Auto-detects <span class="mode-badge mode-exam">exam</span> <span class="mode-badge mode-deep">deep</span> <span class="mode-badge mode-simple">simple</span> mode</p>
     </div>
     <div id="qa-history" style="margin-bottom:16px"></div>
     <div class="card" style="padding:16px">
       <div style="display:flex;gap:10px">
-        <input type="text" id="qa-input" placeholder="Ask (try: explain / why / exam / confused)…" onkeydown="if(event.key==='Enter') askQuestion()" style="flex:1">
+        <input type="text" id="qa-input" placeholder="Try: explain / why / for exam / confused…" onkeydown="if(event.key==='Enter') askQuestion()" style="flex:1">
         <button class="btn btn-primary" onclick="askQuestion()" id="ask-btn" style="white-space:nowrap">Ask →</button>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px" onclick="setQ('Explain this for my exam tomorrow')">📋 Exam</button>
+        <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px" onclick="setQ('Explain deeply with examples')">🔬 Deep</button>
+        <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px" onclick="setQ('I am confused, explain simply')">🤔 Simple</button>
+        <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px;color:var(--danger)" onclick="clearChat()">🗑 Clear chat</button>
       </div>
     </div>
   </div>
 
-  <!-- Topics / Clusters -->
+  <!-- ── Web Fetch ── -->
+  <div class="page" id="page-web">
+    <div class="page-header">
+      <h2>Web Knowledge Import</h2>
+      <p>Fetch notes from Wikipedia or generate via Gemini AI</p>
+    </div>
+    <div class="card">
+      <div class="form-group">
+        <label>Topic</label>
+        <input type="text" id="web-topic" placeholder="e.g. Quantum Computing, Binary Search Tree" onkeydown="if(event.key==='Enter') fetchFromWeb()">
+      </div>
+      <button class="btn btn-primary" onclick="fetchFromWeb()" id="fetch-btn">
+        🌐 Fetch & Save to Notes
+      </button>
+      <div id="web-result" style="margin-top:16px"></div>
+    </div>
+  </div>
+
+  <!-- ── Topic Clusters ── -->
   <div class="page" id="page-clusters">
     <div class="page-header">
       <h2>Topic Clusters</h2>
       <p>AI-discovered themes across your knowledge base</p>
     </div>
     <button class="btn btn-primary mb-4" onclick="loadClusters()" id="cluster-btn">
-      Discover Topics
+      🔮 Discover Topics
     </button>
     <div id="cluster-results"></div>
   </div>
 
-  <!-- Upload File -->
+  <!-- ── Upload File ── -->
   <div class="page" id="page-upload">
     <div class="page-header">
       <h2>Upload File</h2>
       <p>Import .txt or .md documents into your knowledge base</p>
     </div>
-    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event)">
+    <div class="upload-zone" id="upload-zone"
+      onclick="document.getElementById('file-input').click()"
+      ondragover="event.preventDefault();this.classList.add('drag-over')"
+      ondragleave="this.classList.remove('drag-over')"
+      ondrop="handleDrop(event)">
       <div class="upload-icon">📄</div>
       <div class="upload-text"><strong>Click to upload</strong> or drag and drop</div>
       <div class="upload-text" style="margin-top:6px;font-size:12px">.txt and .md files supported</div>
@@ -712,189 +784,453 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// ───────────────────────────────────────────
+// NAVIGATION
+// ───────────────────────────────────────────
+const PAGES = ["dashboard","add","notes","search","ask","web","clusters","upload"];
 
-const API = "";
-
-// ───────── NAVIGATION ─────────
 function showPage(name) {
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
-
-  document.getElementById("page-" + name).classList.add("active");
-
-  const names = ["dashboard","add","notes","search","ask","clusters","upload","web"];
-  document.querySelectorAll(".nav-item")[names.indexOf(name)]?.classList.add("active");
+  document.getElementById("page-" + name)?.classList.add("active");
+  const idx = PAGES.indexOf(name);
+  if (idx >= 0) document.querySelectorAll(".nav-item")[idx]?.classList.add("active");
 
   if (name === "dashboard") loadStats();
-  if (name === "notes") loadNotes();
+  if (name === "notes")     loadNotes();
 }
 
-// ───────── TOAST ─────────
-function toast(msg, type="") {
+// ───────────────────────────────────────────
+// TOAST
+// ───────────────────────────────────────────
+let _toastTimer;
+function toast(msg, type = "") {
   const t = document.getElementById("toast");
   t.textContent = msg;
   t.className = "toast show " + type;
-  setTimeout(() => t.className = "toast", 2500);
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { t.className = "toast"; }, 3000);
 }
 
-// ───────── API HELPER ─────────
-async function apiFetch(path, opts={}) {
-  const res = await fetch(API + path, {
-    headers: {'Content-Type': 'application/json'},
-    ...opts
+// ───────────────────────────────────────────
+// API HELPER
+// ───────────────────────────────────────────
+async function api(path, opts = {}) {
+  const res = await fetch(path, {
+    headers: { "Content-Type": "application/json" },
+    ...opts,
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err || `HTTP ${res.status}`);
+  }
   return res.json();
 }
 
-// ───────── STATS ─────────
+// ───────────────────────────────────────────
+// ESC HTML
+// ───────────────────────────────────────────
+function esc(s) {
+  return String(s || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// ───────────────────────────────────────────
+// STATS + DASHBOARD
+// ───────────────────────────────────────────
 async function loadStats() {
   try {
-    const data = await apiFetch('/stats');
+    const data = await api("/stats");
+
+    // Header stat cards
     document.getElementById("stat-notes").textContent = data.total_notes;
-    document.getElementById("stat-words").textContent = data.total_words;
+    document.getElementById("stat-words").textContent = data.total_words.toLocaleString();
+    document.getElementById("stat-tags").textContent  = data.unique_tags;
 
+    // Sidebar
     document.getElementById("sb-notes").textContent = data.total_notes;
-    document.getElementById("sb-words").textContent = data.total_words;
-  } catch(e) {}
-}
+    document.getElementById("sb-words").textContent = data.total_words.toLocaleString();
+    document.getElementById("sb-tags").textContent  = data.unique_tags;
 
-// ───────── NOTES ─────────
-function loadNotes() {
-  fetch("/notes")
-    .then(res => res.json())
-    .then(data => {
-      const container = document.getElementById("notes-list");
-
-      container.innerHTML = data.map(note => `
-        <div class="note-card" onclick="toggleNote('${note.id}')">
-          
-          <div class="note-title">
-            ${note.title}
-          </div>
-
-          <div class="note-content" id="note-${note.id}">
-            ${note.content}
-          </div>
-
+    // Recent notes
+    const recentEl = document.getElementById("recent-notes");
+    if (data.recent_notes && data.recent_notes.length) {
+      recentEl.innerHTML = data.recent_notes.map(n => `
+        <div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;display:flex;align-items:center;gap:8px">
+          <span style="color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:10px">${esc(n.id)}</span>
+          <span style="color:var(--text);cursor:pointer" onclick="showPage('notes')">${esc(n.title)}</span>
         </div>
       `).join("");
-    });
-}
-async function submitNote() {
-  const title = document.getElementById("note-title").value;
-  const content = document.getElementById("note-content").value;
-  const tags = document.getElementById("note-tags").value.split(",");
+    } else {
+      recentEl.innerHTML = `<div class="text-muted text-sm">No notes yet.</div>`;
+    }
 
-  if (!title || !content) {
-    toast("Title and content required","error");
-    return;
+    // Top tags
+    const tagsEl = document.getElementById("top-tags");
+    if (data.top_tags && data.top_tags.length) {
+      tagsEl.innerHTML = data.top_tags
+        .map(([tag, count]) => `<span class="tag">${esc(tag)} <span style="opacity:.6">${count}</span></span>`)
+        .join("");
+    } else {
+      tagsEl.innerHTML = `<div class="text-muted text-sm">No tags yet.</div>`;
+    }
+
+  } catch (e) {
+    console.error("loadStats error:", e);
   }
-
-  await apiFetch("/notes", {
-    method:"POST",
-    body: JSON.stringify({title, content, tags})
-  });
-
-  toast("Note added","success");
-  loadNotes();
 }
 
-// ───────── SEARCH ─────────
-async function doSearch() {
-  const q = document.getElementById("search-input").value;
-
-  const results = await apiFetch("/search", {
-    method:"POST",
-    body: JSON.stringify({query:q})
-  });
-
-  document.getElementById("search-results").innerHTML =
-    results.map(n => `<div class="note-card">${n.title}</div>`).join("");
-}
-
-// ───────── ASK AI ─────────
-async function askQuestion() {
-  const q = document.getElementById("qa-input").value.trim();
-  if (!q) return;
-
-  const res = await apiFetch("/ask", {
-    method: "POST",
-    body: JSON.stringify({ question: q })
-  });
-
-  document.getElementById("qa-history").innerHTML += `
-    <div class="qa-bubble user">${esc(q)}</div>
-    <div class="qa-bubble agent">${esc(res.answer)}</div>
-  `;
-}
-
-// ───────── 🌐 WEB FETCH (FIXED) ─────────
-async function fetchFromWeb() {
-  const topic = document.getElementById("web-topic").value.trim();
-
-  if (!topic) {
-    toast("Enter a topic","error");
-    return;
-  }
-
-  const btn = document.getElementById("fetch-btn");
-  btn.innerHTML = "Fetching...";
-  btn.disabled = true;
+// ───────────────────────────────────────────
+// ALL NOTES
+// ───────────────────────────────────────────
+async function loadNotes() {
+  const container = document.getElementById("notes-list");
+  container.innerHTML = `<div class="text-muted text-sm" style="padding:20px">Loading…</div>`;
 
   try {
-    const res = await fetch("/fetch", {
-      method:"POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({topic})
+    const notes = await api("/notes");
+
+    if (!notes || notes.length === 0) {
+      container.innerHTML = `<div class="empty-state"><div class="emoji">📭</div><h3>No notes yet</h3><p>Add your first note to get started.</p></div>`;
+      return;
+    }
+
+    container.innerHTML = [...notes].reverse().map(note => {
+      const tags = (note.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join("");
+      const date = note.created_at ? new Date(note.created_at).toLocaleDateString() : "";
+      const preview = esc(note.content || "").slice(0, 180) + (note.content?.length > 180 ? "…" : "");
+      const fullContent = esc(note.content || "");
+
+      return `
+        <div class="note-card" id="nc-${note.id}">
+          <div class="note-card-header">
+            <div class="note-title-text" onclick="toggleNote('${note.id}')">${esc(note.title)}</div>
+            <button class="btn btn-danger" onclick="deleteNote('${note.id}', event)" title="Delete note">✕</button>
+          </div>
+          <div class="note-preview">${preview}</div>
+          <div class="note-body">${fullContent}</div>
+          <div class="note-footer">
+            ${tags}
+            <span class="note-meta">${note.word_count || 0} words · ${date}</span>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+  } catch (e) {
+    container.innerHTML = `<div class="text-muted text-sm" style="padding:20px">Error loading notes: ${esc(e.message)}</div>`;
+  }
+}
+
+function toggleNote(id) {
+  const card = document.getElementById("nc-" + id);
+  if (card) card.classList.toggle("expanded");
+}
+
+async function deleteNote(id, event) {
+  event.stopPropagation();
+  if (!confirm("Delete this note? This cannot be undone.")) return;
+  try {
+    await api(`/notes/${id}`, { method: "DELETE" });
+    toast("Note deleted", "success");
+    loadNotes();
+    loadStats();
+  } catch (e) {
+    toast("Failed to delete: " + e.message, "error");
+  }
+}
+
+// ───────────────────────────────────────────
+// ADD NOTE
+// ───────────────────────────────────────────
+async function submitNote() {
+  const title   = document.getElementById("note-title").value.trim();
+  const content = document.getElementById("note-content").value.trim();
+  const tagsRaw = document.getElementById("note-tags").value;
+  const tags    = tagsRaw.split(",").map(t => t.trim()).filter(Boolean);
+
+  if (!title)   { toast("Title is required", "error"); return; }
+  if (!content) { toast("Content is required", "error"); return; }
+
+  const btn = document.getElementById("submit-note-btn");
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span> Saving…`;
+
+  try {
+    const note = await api("/notes", {
+      method: "POST",
+      body: JSON.stringify({ title, content, tags }),
+    });
+    toast(`✅ Note saved (ID: ${note.id})`, "success");
+    clearNoteForm();
+    loadStats();
+  } catch (e) {
+    toast("Error: " + e.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="17,21 17,13 7,13 7,21" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Save Note`;
+  }
+}
+
+function clearNoteForm() {
+  document.getElementById("note-title").value   = "";
+  document.getElementById("note-content").value = "";
+  document.getElementById("note-tags").value    = "";
+}
+
+// ───────────────────────────────────────────
+// SEARCH
+// ───────────────────────────────────────────
+async function doSearch() {
+  const q = document.getElementById("search-input").value.trim();
+  const container = document.getElementById("search-results");
+
+  if (!q) { toast("Enter a search query", "error"); return; }
+
+  container.innerHTML = `<div class="text-muted text-sm">Searching…</div>`;
+
+  try {
+    const results = await api("/search", {
+      method: "POST",
+      body: JSON.stringify({ query: q }),
     });
 
-    const data = await res.json();
+    if (!results || results.length === 0) {
+      container.innerHTML = `<div class="empty-state"><div class="emoji">🔍</div><h3>No results found</h3><p>Try different keywords or add more notes.</p></div>`;
+      return;
+    }
 
-    if (data.error) throw new Error(data.error);
+    container.innerHTML = results.map(n => {
+      const tags = (n.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join("");
+      const preview = esc(n.content || "").slice(0, 200) + (n.content?.length > 200 ? "…" : "");
+      return `
+        <div class="note-card">
+          <div class="note-card-header">
+            <div class="note-title-text">${esc(n.title)}</div>
+            <span class="score-badge">score ${n.score}</span>
+          </div>
+          <div class="note-preview">${preview}</div>
+          <div class="note-footer">${tags}</div>
+        </div>
+      `;
+    }).join("");
 
-    document.getElementById("web-result").innerHTML = `
-      <div class="card">
-        <b>✅ Added:</b> ${data.note.title}<br>
-        ${data.note.word_count} words
+  } catch (e) {
+    container.innerHTML = `<div class="text-muted text-sm">Search error: ${esc(e.message)}</div>`;
+  }
+}
+
+// ───────────────────────────────────────────
+// ASK AI
+// ───────────────────────────────────────────
+function detectModeLabel(q) {
+  const lower = q.toLowerCase();
+  if (/exam|revision|quick|short|bullet|summary/.test(lower)) return ["exam",   "📋 Exam mode"];
+  if (/why|how|deep|understand|explain|detail/.test(lower))   return ["deep",   "🔬 Deep mode"];
+  if (/confused|hard|difficult|simple|beginner/.test(lower))  return ["simple", "🤔 Simple mode"];
+  return ["normal", "💬 Normal mode"];
+}
+
+async function askQuestion() {
+  const input = document.getElementById("qa-input");
+  const q = input.value.trim();
+  if (!q) return;
+
+  const btn = document.getElementById("ask-btn");
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span>`;
+  input.value = "";
+
+  const [modeKey, modeLabel] = detectModeLabel(q);
+  const history = document.getElementById("qa-history");
+
+  history.innerHTML += `
+    <div class="qa-bubble user">
+      <div class="qa-label user">You <span class="mode-badge mode-${modeKey}">${modeLabel}</span></div>
+      ${esc(q)}
+    </div>
+  `;
+
+  // Scroll to bottom
+  history.scrollTop = history.scrollHeight;
+
+  try {
+    const res = await api("/ask", {
+      method: "POST",
+      body: JSON.stringify({ question: q }),
+    });
+
+    history.innerHTML += `
+      <div class="qa-bubble agent">
+        <div class="qa-label agent">🤖 AI Tutor</div>
+        ${esc(res.answer)}
+      </div>
+    `;
+  } catch (e) {
+    history.innerHTML += `
+      <div class="qa-bubble agent">
+        <div class="qa-label agent">⚠️ Error</div>
+        ${esc(e.message)}
+      </div>
+    `;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = "Ask →";
+    history.scrollTop = history.scrollHeight;
+  }
+}
+
+function setQ(text) {
+  document.getElementById("qa-input").value = text;
+  document.getElementById("qa-input").focus();
+}
+
+function clearChat() {
+  document.getElementById("qa-history").innerHTML = "";
+}
+
+// ───────────────────────────────────────────
+// WEB FETCH
+// ───────────────────────────────────────────
+async function fetchFromWeb() {
+  const topic = document.getElementById("web-topic").value.trim();
+  const resultEl = document.getElementById("web-result");
+  const btn = document.getElementById("fetch-btn");
+
+  if (!topic) { toast("Enter a topic", "error"); return; }
+
+  btn.innerHTML = `<span class="spinner"></span> Fetching…`;
+  btn.disabled = true;
+  resultEl.innerHTML = `<div class="text-muted text-sm">Searching Wikipedia and Gemini AI…</div>`;
+
+  try {
+    const data = await api("/fetch", {
+      method: "POST",
+      body: JSON.stringify({ topic }),
+    });
+
+    resultEl.innerHTML = `
+      <div class="card" style="border-color:var(--success)">
+        <div style="color:var(--success);font-weight:500;margin-bottom:8px">✅ ${esc(data.message)}</div>
+        <div><strong>${esc(data.note.title)}</strong></div>
+        <div class="text-muted text-sm" style="margin-top:4px">${data.note.word_count} words added · ID: ${esc(data.note.id)}</div>
+        <div class="note-preview" style="margin-top:10px">${esc(data.note.content).slice(0, 300)}…</div>
       </div>
     `;
 
-    toast("Knowledge added!","success");
-
-    loadNotes();
+    toast("Knowledge saved to notes!", "success");
     loadStats();
 
-  } catch(e) {
-    toast("Failed to fetch","error");
-  }
-
-  btn.innerHTML = "🌐 Fetch from Web";
-  btn.disabled = false;
-}
-function toggleNote(id) {
-  const el = document.getElementById("note-" + id);
-
-  if (el.style.display === "block") {
-    el.style.display = "none";
-  } else {
-    el.style.display = "block";
+  } catch (e) {
+    resultEl.innerHTML = `<div class="card" style="border-color:var(--danger)"><div style="color:var(--danger)">❌ ${esc(e.message)}</div></div>`;
+    toast("Fetch failed", "error");
+  } finally {
+    btn.innerHTML = "🌐 Fetch & Save to Notes";
+    btn.disabled = false;
   }
 }
-function toggleNote(id) {
-  const card = document.querySelector(`#note-${id}`).parentElement;
-  card.classList.toggle("active");
-}
-// ───────── HELPERS ─────────
-function esc(s) {
-  return String(s||"")
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;");
+
+// ───────────────────────────────────────────
+// CLUSTERS
+// ───────────────────────────────────────────
+async function loadClusters() {
+  const container = document.getElementById("cluster-results");
+  const btn = document.getElementById("cluster-btn");
+
+  btn.innerHTML = `<span class="spinner"></span> Discovering…`;
+  btn.disabled = true;
+  container.innerHTML = `<div class="text-muted text-sm">Analyzing your notes…</div>`;
+
+  try {
+    const clusters = await api("/cluster", { method: "POST" });
+
+    if (!clusters || clusters.length === 0) {
+      container.innerHTML = `<div class="empty-state"><div class="emoji">🗂</div><h3>Not enough notes</h3><p>Add at least 2 notes on different topics to discover clusters.</p></div>`;
+      return;
+    }
+
+    container.innerHTML = `<div class="cluster-grid">${
+      clusters.map(c => `
+        <div class="cluster-card">
+          <div class="cluster-header">
+            <div class="cluster-title">${esc(c.topic)}</div>
+            <div class="cluster-badge">${c.count} note${c.count !== 1 ? "s" : ""}</div>
+          </div>
+          <div class="cluster-keywords">
+            ${(c.keywords || []).map(k => `<span class="keyword">${esc(k)}</span>`).join("")}
+          </div>
+          <div class="cluster-notes-list">
+            ${c.notes.map(n => `<div>📝 ${esc(n.title)}</div>`).join("")}
+          </div>
+        </div>
+      `).join("")
+    }</div>`;
+
+  } catch (e) {
+    container.innerHTML = `<div class="text-muted text-sm">Error: ${esc(e.message)}</div>`;
+  } finally {
+    btn.innerHTML = "🔮 Discover Topics";
+    btn.disabled = false;
+  }
 }
 
-// ───────── INIT ─────────
+// ───────────────────────────────────────────
+// FILE UPLOAD
+// ───────────────────────────────────────────
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById("upload-zone").classList.remove("drag-over");
+  const file = e.dataTransfer.files[0];
+  if (file) uploadFile(file);
+}
+
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) uploadFile(file);
+  e.target.value = "";
+}
+
+async function uploadFile(file) {
+  const statusEl = document.getElementById("upload-status");
+  const ext = file.name.split(".").pop().toLowerCase();
+
+  if (!["txt", "md"].includes(ext)) {
+    toast("Only .txt and .md files are supported", "error");
+    return;
+  }
+
+  statusEl.innerHTML = `<div class="text-muted text-sm">Uploading <strong>${esc(file.name)}</strong>…</div>`;
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const res = await fetch("/upload", { method: "POST", body: formData });
+    if (!res.ok) throw new Error(await res.text());
+    const note = await res.json();
+
+    statusEl.innerHTML = `
+      <div class="card" style="border-color:var(--success)">
+        <div style="color:var(--success);font-weight:500">✅ File imported successfully</div>
+        <div style="margin-top:6px"><strong>${esc(note.title)}</strong></div>
+        <div class="text-muted text-sm">${note.word_count} words · ID: ${esc(note.id)}</div>
+      </div>
+    `;
+    toast("File imported!", "success");
+    loadStats();
+  } catch (e) {
+    statusEl.innerHTML = `<div class="text-muted text-sm" style="color:var(--danger)">❌ Upload failed: ${esc(e.message)}</div>`;
+    toast("Upload failed", "error");
+  }
+}
+
+// ───────────────────────────────────────────
+// INIT
+// ───────────────────────────────────────────
 loadStats();
-
-</script></body>
+</script>
+</body>
 </html>

@@ -2,8 +2,15 @@
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
+.Python
 
-# Env files
+# Virtual envs
+venv/
+env/
+.venv/
+
+# Env secrets
 .env
 
 # VS Code
@@ -11,6 +18,10 @@ __pycache__/
 
 # OS files
 .DS_Store
+Thumbs.db
 
 # Node (if any)
 node_modules/
+
+# Data — keep pkb_data.json out of git for privacy
+pkb_data.json

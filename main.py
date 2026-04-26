@@ -4,7 +4,8 @@ Personal Knowledge Base Agent  ·  main.py
 FastAPI server — serves the REST API + the web UI from index.html
 
 Run in VS Code:  Press F5  (uses .vscode/launch.json)
-Run in terminal: uvicorn main:app --reload --port 8000
+Run in terminal: python main.py
+                 uvicorn main:app --reload --port 8000
 """
 
 import os
@@ -12,20 +13,21 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 load_dotenv()  # must happen before importing agent
-from pydantic import BaseModel
+
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
-from agent_langchain import ask_agent
+
 from agent import PKBAgent
+from agent_langchain import ask_agent, get_llm, get_agent
 
 # ── App ────────────────────────────────────────────────────────────────────────
 
 app = FastAPI(
     title="Personal Knowledge Base Agent",
-    description="RAG-powered note-taking with Gemini 2.5 Flash",
-    version="2.0.0",
+    description="RAG-powered note-taking with Gemini Flash",
+    version="2.1.0",
 )
 
 app.add_middleware(
@@ -37,6 +39,13 @@ app.add_middleware(
 
 agent = PKBAgent()
 
+# Pre-warm LLM at startup so first user request is fast
+try:
+    get_llm()
+    print("✅ LLM warmed up and cached")
+except Exception as e:
+    print(f"⚠️  LLM warmup skipped: {e}")
+
 # ── Models ─────────────────────────────────────────────────────────────────────
 
 class NoteCreate(BaseModel):
@@ -44,11 +53,22 @@ class NoteCreate(BaseModel):
     content: str
     tags:    list[str] = []
 
+class NoteUpdate(BaseModel):
+    title:   str | None = None
+    content: str | None = None
+    tags:    list[str] | None = None
+
 class QuestionRequest(BaseModel):
     question: str
 
 class SearchRequest(BaseModel):
     query: str
+
+class FetchRequest(BaseModel):
+    topic: str
+
+class LangRequest(BaseModel):
+    question: str
 
 # ── Serve the UI ───────────────────────────────────────────────────────────────
 
@@ -81,6 +101,13 @@ async def get_note(note_id: str):
         raise HTTPException(404, f"Note '{note_id}' not found")
     return note
 
+@app.put("/notes/{note_id}")
+async def update_note(note_id: str, body: NoteUpdate):
+    note = agent.update_note(note_id, body.title, body.content, body.tags)
+    if not note:
+        raise HTTPException(404, f"Note '{note_id}' not found")
+    return note
+
 @app.delete("/notes/{note_id}")
 async def delete_note(note_id: str):
     if not agent.delete_note(note_id):
@@ -104,6 +131,14 @@ async def ask(req: QuestionRequest):
     answer = agent.answer_question(req.question)
     return {"question": req.question, "answer": answer}
 
+# ── LangChain Agent ───────────────────────────────────────────────────────────
+
+@app.post("/agent")
+async def lang_agent(req: LangRequest):
+    if not req.question.strip():
+        raise HTTPException(400, "Question cannot be empty")
+    return {"answer": ask_agent(req.question)}
+
 # ── File Upload ────────────────────────────────────────────────────────────────
 
 ALLOWED_TYPES = {".txt", ".md"}
@@ -118,9 +153,9 @@ async def upload_file(file: UploadFile = File(...)):
     if not text:
         raise HTTPException(400, "Uploaded file is empty")
     return agent.add_note(
-        title   = Path(file.filename).stem.replace("-", " ").replace("_", " ").title(),
-        content = text,
-        tags    = ["uploaded", ext.lstrip(".")],
+        title=Path(file.filename).stem.replace("-", " ").replace("_", " ").title(),
+        content=text,
+        tags=["uploaded", ext.lstrip(".")],
     )
 
 # ── Clusters ───────────────────────────────────────────────────────────────────
@@ -139,17 +174,19 @@ async def stats():
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "notes": len(agent.notes), "model": "gemini-2.5-flash"}
+    return {"status": "ok", "notes": len(agent.notes), "model": "gemini-2.0-flash"}
 
-class FetchRequest(BaseModel):
-    topic: str
+# ── Web Fetch ──────────────────────────────────────────────────────────────────
 
 @app.post("/fetch")
 async def fetch(req: FetchRequest):
     if not req.topic.strip():
         raise HTTPException(400, "Topic cannot be empty")
+    result = agent.fetch_from_web(req.topic)
+    if "error" in result:
+        raise HTTPException(500, result["error"])
+    return result
 
-    return agent.fetch_from_web(req.topic)
 # ── Entry point ────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -158,10 +195,3 @@ if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))
     print(f"\n🧠  PKB Agent running → http://localhost:{port}\n")
     uvicorn.run("main:app", host=host, port=port, reload=True)
-
-class LangRequest(BaseModel):
-    question: str
-
-@app.post("/agent")
-async def lang_agent(req: LangRequest):
-    return {"answer": ask_agent(req.question)}
